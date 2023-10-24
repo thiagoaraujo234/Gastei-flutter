@@ -1,38 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:gastei/models/despesa.dart';
+import 'package:gastei/models/receita.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
-class DespesaScreen extends StatefulWidget {
-  const DespesaScreen({Key? key}) : super(key: key);
+class ReceitasScreen extends StatefulWidget {
+  const ReceitasScreen({Key? key}) : super(key: key);
 
   @override
-  _DespesaScreenState createState() => _DespesaScreenState();
+  _ReceitasScreenState createState() => _ReceitasScreenState();
 }
 
-class _DespesaScreenState extends State<DespesaScreen> {
-  final List<Despesa> despesas = [];
+class _ReceitasScreenState extends State<ReceitasScreen> {
+  final List<Receita> receitas = [];
   final TextEditingController nameController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
   final TextEditingController categoryController = TextEditingController();
 
-  // Função para salvar as despesas no SharedPreferences
-  Future<void> _saveDespesas() async {
+  // Função para salvar as receitas no SharedPreferences
+  Future<void> _saveReceitas() async {
     final prefs = await SharedPreferences.getInstance();
-    final despesasList = despesas.map((despesa) => despesa.toMap()).toList();
-    await prefs.setString('despesas', json.encode(despesasList));
+    final receitasList = receitas.map((receita) => receita.toMap()).toList();
+    await prefs.setString('receitas', json.encode(receitasList));
   }
 
-  // Função para carregar as despesas do SharedPreferences
-  Future<void> _loadDespesas() async {
+  // Função para carregar as receitas do SharedPreferences
+  Future<void> _loadReceitas() async {
     final prefs = await SharedPreferences.getInstance();
-    final despesasJson = prefs.getString('despesas');
-    if (despesasJson != null) {
-      final despesasList = json.decode(despesasJson) as List;
-      despesasList.forEach((despesaMap) {
-        final despesa = Despesa.fromMap(despesaMap);
+    final receitasJson = prefs.getString('receitas');
+    if (receitasJson != null) {
+      final receitasList = json.decode(receitasJson) as List;
+      receitasList.forEach((receitaMap) {
+        final receita = Receita.fromMap(receitaMap);
         setState(() {
-          despesas.add(despesa);
+          receitas.add(receita);
         });
       });
     }
@@ -41,10 +41,10 @@ class _DespesaScreenState extends State<DespesaScreen> {
   @override
   void initState() {
     super.initState();
-    _loadDespesas();
+    _loadReceitas();
   }
 
-  void _addDespesa() {
+  void _addReceita() {
     if (nameController.text.isEmpty ||
         amountController.text.isEmpty ||
         categoryController.text.isEmpty) {
@@ -59,7 +59,7 @@ class _DespesaScreenState extends State<DespesaScreen> {
     }
 
     setState(() {
-      despesas.add(Despesa(
+      receitas.add(Receita(
         name: nameController.text,
         amount: amount,
         category: categoryController.text,
@@ -70,35 +70,35 @@ class _DespesaScreenState extends State<DespesaScreen> {
       amountController.clear();
       categoryController.clear();
 
-      _saveDespesas();
+      _saveReceitas();
     });
   }
 
-  void _editDespesa(int index) {
-    nameController.text = despesas[index].name;
-    amountController.text = despesas[index].amount.toString();
-    categoryController.text = despesas[index].category;
+  void _editReceita(int index) {
+    nameController.text = receitas[index].name;
+    amountController.text = receitas[index].amount.toString();
+    categoryController.text = receitas[index].category;
 
     setState(() {
-      despesas.removeAt(index);
-      _saveDespesas();
+      receitas.removeAt(index);
+      _saveReceitas();
     });
   }
 
-  void _deleteDespesa(int index) {
+  void _deleteReceita(int index) {
     setState(() {
-      despesas.removeAt(index);
-      _saveDespesas();
+      receitas.removeAt(index);
+      _saveReceitas();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    double totalAmount = despesas.fold(0, (sum, item) => sum + item.amount);
+    double totalAmount = receitas.fold(0, (sum, item) => sum + item.amount);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Despesas'),
+        title: Text('Receitas'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context, totalAmount),
@@ -109,7 +109,7 @@ class _DespesaScreenState extends State<DespesaScreen> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
-              'Total de Despesas: R\$${totalAmount.toStringAsFixed(2)}',
+              'Total de Receitas: R\$${totalAmount.toStringAsFixed(2)}',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ),
@@ -120,7 +120,7 @@ class _DespesaScreenState extends State<DespesaScreen> {
                 TextField(
                   controller: nameController,
                   decoration: InputDecoration(
-                    labelText: 'Nome da Despesa',
+                    labelText: 'Nome da Receita',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),
@@ -149,30 +149,30 @@ class _DespesaScreenState extends State<DespesaScreen> {
                 ),
                 SizedBox(height: 10),
                 ElevatedButton(
-                  onPressed: _addDespesa,
-                  child: Text('Inserir Despesa'),
+                  onPressed: _addReceita,
+                  child: Text('Inserir Receita'),
                 ),
               ],
             ),
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: despesas.length,
+              itemCount: receitas.length,
               itemBuilder: (ctx, index) {
-                final despesa = despesas[index];
+                final receita = receitas[index];
                 return ListTile(
-                  title: Text(despesa.name),
-                  subtitle: Text('Valor: R\$${despesa.amount.toStringAsFixed(2)} - Categoria: ${despesa.category}'),
+                  title: Text(receita.name),
+                  subtitle: Text('Valor: R\$${receita.amount.toStringAsFixed(2)} - Categoria: ${receita.category}'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       IconButton(
                         icon: Icon(Icons.edit),
-                        onPressed: () => _editDespesa(index),
+                        onPressed: () => _editReceita(index),
                       ),
                       IconButton(
                         icon: Icon(Icons.delete),
-                        onPressed: () => _deleteDespesa(index),
+                        onPressed: () => _deleteReceita(index),
                       )
                     ],
                   ),
