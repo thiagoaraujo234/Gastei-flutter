@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gastei/views/despesa_screen.dart';
 import 'package:gastei/views/receita_screen.dart';
+import 'package:gastei/views/login.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -10,6 +11,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   double totalDespesas = 0.0;
   double totalReceitas = 0.0;
+  int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text('Home Screen'),
+        title: Text(''),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -35,7 +37,14 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Saldo Atual R\$ ${saldo.toStringAsFixed(2)}', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                Text(
+                  'Saldo Atual R\$ ${saldo.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
                 SizedBox(height: 16),
                 InkWell(
                   onTap: () async {
@@ -110,6 +119,32 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard),
+            label: 'Dashboard',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.login),
+            label: 'Login',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.blue,
+        onTap: (index) {
+          if (index == 0) {
+            // Navegue para a tela de Dashboard
+          } else if (index == 1) {
+            // Navegue para a tela de Login
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) {
+                return LoginPage();
+              },
+            ));
+          }
+        },
       ),
     );
   }
