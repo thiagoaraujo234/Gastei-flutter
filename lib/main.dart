@@ -1,20 +1,23 @@
-import 'package:flutter/material.dart';
-import 'package:gastei/views/home_screen.dart';
 
-void main() {
+import 'package:flutter/material.dart';
+import 'routes.dart';
+import 'utils/session_manager.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SessionManager.init(); // Chamar o método init() antes de executar o MyApp()
   runApp(MyApp());
 }
-
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Gastei - Finanças',
+      title: 'Chama aqui',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: HomeScreen(),
+      onGenerateRoute: Routes.generateRoutes,
+      initialRoute: Routes.initialRoute,
     );
   }
 }
-
