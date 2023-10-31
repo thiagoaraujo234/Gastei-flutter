@@ -50,10 +50,8 @@ dev_dependencies:
   shared_preferences: ^2.0.8
   http: any
   flutter_neumorphic: any
-  carousel_slider: any
   charts_flutter: any
   fl_chart: any
-
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
