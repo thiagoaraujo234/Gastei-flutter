@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:gastei/models/receita.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:intl/intl.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class ReceitasScreen extends StatefulWidget {
   const ReceitasScreen({Key? key}) : super(key: key);
@@ -15,15 +17,40 @@ class _ReceitasScreenState extends State<ReceitasScreen> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
   final TextEditingController categoryController = TextEditingController();
+  DateTime? selectedDate;
 
-  // Função para salvar as receitas no SharedPreferences
+  // Lista de sugestões para o campo de categorias
+  final List<String> categorySuggestions = [];
+
+  // Formatador de data
+  final DateFormat dateFormat = DateFormat('dd/MM/yyyy');
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReceitas();
+    _loadCategorySuggestions();
+  }
+
+  Future<void> _loadCategorySuggestions() async {
+    final prefs = await SharedPreferences.getInstance();
+    final categories = prefs.getStringList('categories');
+    if (categories != null) {
+      setState(() {
+        categorySuggestions.addAll(categories);
+      });
+    }
+
+    // Sugestões de exemplo
+    categorySuggestions.addAll(['Exemplo 1', 'Exemplo 2']);
+  }
+
   Future<void> _saveReceitas() async {
     final prefs = await SharedPreferences.getInstance();
     final receitasList = receitas.map((receita) => receita.toMap()).toList();
     await prefs.setString('receitas', json.encode(receitasList));
   }
 
-  // Função para carregar as receitas do SharedPreferences
   Future<void> _loadReceitas() async {
     final prefs = await SharedPreferences.getInstance();
     final receitasJson = prefs.getString('receitas');
@@ -36,12 +63,6 @@ class _ReceitasScreenState extends State<ReceitasScreen> {
         });
       });
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadReceitas();
   }
 
   void _addReceita() {
@@ -63,12 +84,13 @@ class _ReceitasScreenState extends State<ReceitasScreen> {
         name: nameController.text,
         amount: amount,
         category: categoryController.text,
-        date: DateTime.now(),
+        date: selectedDate ?? DateTime.now(),
       ));
 
       nameController.clear();
       amountController.clear();
       categoryController.clear();
+      selectedDate = null;
 
       _saveReceitas();
     });
@@ -78,6 +100,7 @@ class _ReceitasScreenState extends State<ReceitasScreen> {
     nameController.text = receitas[index].name;
     amountController.text = receitas[index].amount.toString();
     categoryController.text = receitas[index].category;
+    selectedDate = receitas[index].date;
 
     setState(() {
       receitas.removeAt(index);
@@ -90,6 +113,21 @@ class _ReceitasScreenState extends State<ReceitasScreen> {
       receitas.removeAt(index);
       _saveReceitas();
     });
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+
+    if (pickedDate != null && pickedDate != selectedDate) {
+      setState(() {
+        selectedDate = pickedDate;
+      });
+    }
   }
 
   @override
@@ -117,67 +155,134 @@ class _ReceitasScreenState extends State<ReceitasScreen> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                TextField(
+                TextFormField(
                   controller: nameController,
                   decoration: InputDecoration(
                     labelText: 'Nome da Receita',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),
+                    prefixIcon: Icon(Icons.note),
                   ),
                 ),
                 SizedBox(height: 10),
-                TextField(
+                TextFormField(
                   controller: amountController,
                   decoration: InputDecoration(
                     labelText: 'Valor',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),
+                    prefixIcon: Icon(Icons.attach_money),
                   ),
                   keyboardType: TextInputType.number,
                 ),
                 SizedBox(height: 10),
-                TextField(
-                  controller: categoryController,
-                  decoration: InputDecoration(
-                    labelText: 'Categoria',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.0),
+                TypeAheadField<String>(
+                  textFieldConfiguration: TextFieldConfiguration(
+                    controller: categoryController,
+                    decoration: InputDecoration(
+                      labelText: 'Categoria',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      prefixIcon: Icon(Icons.category),
                     ),
                   ),
+                  suggestionsCallback: (pattern) {
+                    return categorySuggestions.where((category) => category.toLowerCase().contains(pattern.toLowerCase()));
+                  },
+                  itemBuilder: (context, suggestion) {
+                    return ListTile(
+                      title: Text(suggestion),
+                    );
+                  },
+                  onSuggestionSelected: (suggestion) {
+                    categoryController.text = suggestion;
+                  },
                 ),
                 SizedBox(height: 10),
                 ElevatedButton(
+                  onPressed: () => _selectDate(context),
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.white54,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                  child: Container(
+                    alignment: Alignment.center,
+                    width: double.infinity,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(width: 10),
+                        Text(
+                          'Data ',
+                          style: TextStyle(color: Colors.black54),
+                        ),
+                        Icon(Icons.calendar_today, color: Colors.black54), // Adicionei um ícone de calendário
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+                if (selectedDate != null)
+
+                  Text(
+                    'Data selecionada: ${dateFormat.format(selectedDate!)}',
+                  ),
+                SizedBox(height: 20),
+                ElevatedButton(
                   onPressed: _addReceita,
-                  child: Text('Inserir Receita'),
+                  style: ElevatedButton.styleFrom(
+                    primary: Theme.of(context).primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                  child: Container(
+                    alignment: Alignment.center,
+                    width: double.infinity,
+                    child: Text(
+                      'Inserir Receita',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: receitas.length,
-              itemBuilder: (ctx, index) {
-                final receita = receitas[index];
-                return ListTile(
-                  title: Text(receita.name),
-                  subtitle: Text('Valor: R\$${receita.amount.toStringAsFixed(2)} - Categoria: ${receita.category}'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () => _editReceita(index),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () => _deleteReceita(index),
-                      )
-                    ],
-                  ),
-                );
-              },
+            child: Card(
+              elevation: 8, // Adicionei uma sombra ao redor da lista de itens
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0), // Bordas arredondadas
+              ),
+              margin: EdgeInsets.all(16),
+              child: ListView.builder(
+                itemCount: receitas.length,
+                itemBuilder: (ctx, index) {
+                  final receita = receitas[index];
+                  return ListTile(
+                    title: Text(receita.name),
+                    subtitle: Text('Valor: R\$${receita.amount.toStringAsFixed(2)} - Categoria: ${receita.category} - Data: ${dateFormat.format(receita.date)}'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        IconButton(
+                          icon: Icon(Icons.edit),
+                          onPressed: () => _editReceita(index),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () => _deleteReceita(index),
+                        )
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ],

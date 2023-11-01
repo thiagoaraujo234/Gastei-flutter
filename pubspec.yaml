@@ -52,6 +52,9 @@ dev_dependencies:
   flutter_neumorphic: any
   charts_flutter: any
   fl_chart: any
+  autocomplete_textfield: ^2.0.1
+  flutter_typeahead: ^4.8.0
+  intl: any
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
