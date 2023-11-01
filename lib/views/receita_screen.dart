@@ -69,6 +69,23 @@ class _ReceitasScreenState extends State<ReceitasScreen> {
     if (nameController.text.isEmpty ||
         amountController.text.isEmpty ||
         categoryController.text.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Erro'),
+            content: Text('Preencha todos os campos corretamente.'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
       return;
     }
 
@@ -76,6 +93,23 @@ class _ReceitasScreenState extends State<ReceitasScreen> {
     try {
       amount = double.parse(amountController.text);
     } catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Erro'),
+            content: Text('O valor deve ser um número válido.'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
       return;
     }
 
@@ -205,7 +239,7 @@ class _ReceitasScreenState extends State<ReceitasScreen> {
                 ElevatedButton(
                   onPressed: () => _selectDate(context),
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.white54,
+                    primary: Colors.blue, // Alterei a cor para azul
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),
@@ -219,16 +253,15 @@ class _ReceitasScreenState extends State<ReceitasScreen> {
                         SizedBox(width: 10),
                         Text(
                           'Data ',
-                          style: TextStyle(color: Colors.black54),
+                          style: TextStyle(color: Colors.white), // Alterei a cor do texto para branco
                         ),
-                        Icon(Icons.calendar_today, color: Colors.black54), // Adicionei um ícone de calendário
+                        Icon(Icons.calendar_today, color: Colors.white), // Alterei a cor do ícone para branco
                       ],
                     ),
                   ),
                 ),
                 SizedBox(height: 20),
                 if (selectedDate != null)
-
                   Text(
                     'Data selecionada: ${dateFormat.format(selectedDate!)}',
                   ),
@@ -255,9 +288,9 @@ class _ReceitasScreenState extends State<ReceitasScreen> {
           ),
           Expanded(
             child: Card(
-              elevation: 8, // Adicionei uma sombra ao redor da lista de itens
+              elevation: 8,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0), // Bordas arredondadas
+                borderRadius: BorderRadius.circular(10.0),
               ),
               margin: EdgeInsets.all(16),
               child: ListView.builder(

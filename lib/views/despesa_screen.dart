@@ -48,6 +48,23 @@ class _DespesaScreenState extends State<DespesaScreen> {
     if (nameController.text.isEmpty ||
         amountController.text.isEmpty ||
         categoryController.text.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Erro'),
+            content: Text('Preencha todos os campos corretamente.'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
       return;
     }
 
@@ -55,6 +72,23 @@ class _DespesaScreenState extends State<DespesaScreen> {
     try {
       amount = double.parse(amountController.text);
     } catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Erro'),
+            content: Text('O valor deve ser um número válido.'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
       return;
     }
 
@@ -117,67 +151,90 @@ class _DespesaScreenState extends State<DespesaScreen> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                TextField(
+                TextFormField(
                   controller: nameController,
                   decoration: InputDecoration(
                     labelText: 'Nome da Despesa',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),
+                    prefixIcon: Icon(Icons.note),
                   ),
                 ),
                 SizedBox(height: 10),
-                TextField(
+                TextFormField(
                   controller: amountController,
                   decoration: InputDecoration(
                     labelText: 'Valor',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),
+                    prefixIcon: Icon(Icons.attach_money),
                   ),
                   keyboardType: TextInputType.number,
                 ),
                 SizedBox(height: 10),
-                TextField(
+                TextFormField(
                   controller: categoryController,
                   decoration: InputDecoration(
                     labelText: 'Categoria',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),
+                    prefixIcon: Icon(Icons.category),
                   ),
                 ),
                 SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: _addDespesa,
-                  child: Text('Inserir Despesa'),
+                  style: ElevatedButton.styleFrom(
+                    primary: Theme.of(context).primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                  child: Container(
+                    alignment: Alignment.center,
+                    width: double.infinity,
+                    child: Text(
+                      'Inserir Despesa',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: despesas.length,
-              itemBuilder: (ctx, index) {
-                final despesa = despesas[index];
-                return ListTile(
-                  title: Text(despesa.name),
-                  subtitle: Text('Valor: R\$${despesa.amount.toStringAsFixed(2)} - Categoria: ${despesa.category}'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () => _editDespesa(index),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () => _deleteDespesa(index),
-                      )
-                    ],
-                  ),
-                );
-              },
+            child: Card(
+              elevation: 8, // Adicionei uma sombra ao redor da lista de itens
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0), // Bordas arredondadas
+              ),
+              margin: EdgeInsets.all(16),
+              child: ListView.builder(
+                itemCount: despesas.length,
+                itemBuilder: (ctx, index) {
+                  final despesa = despesas[index];
+                  return ListTile(
+                    title: Text(despesa.name),
+                    subtitle: Text('Valor: R\$${despesa.amount.toStringAsFixed(2)} - Categoria: ${despesa.category}'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        IconButton(
+                          icon: Icon(Icons.edit),
+                          onPressed: () => _editDespesa(index),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () => _deleteDespesa(index),
+                        )
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ],
